@@ -6,8 +6,17 @@
         </a>        
     </x-slot>
 
-       <div class="py-6">
+    <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
+
+            {{-- Alert sukcesu --}}
+            @if(session('success'))
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            {{-- Filtry --}}
             <form method="GET" action="{{ route('tasks.index') }}" class="flex flex-wrap gap-4 mb-4">
                 <select name="priority" class="border rounded px-3 py-2">
                     <option value="">-- Priorytet --</option>
@@ -28,6 +37,7 @@
                 <button class="bg-blue-500 text-white px-4 py-2 rounded">Filtruj</button>
             </form>
 
+            {{-- Tabela z zadaniami --}}
             <div class="overflow-hidden bg-white shadow-xl sm:rounded-lg">
                 <table class="min-w-full table-auto">
                     <thead>
@@ -37,6 +47,7 @@
                             <th class="px-4 py-2 border-b">Status</th>
                             <th class="px-4 py-2 border-b">Termin</th>
                             <th class="px-4 py-2 border-b text-center">Akcje</th>
+                            <th class="px-4 py-2 border-b text-center">Link publiczny</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -45,7 +56,7 @@
                                 <td class="px-4 py-2 border-b">{{ $task->title }}</td>
                                 <td class="px-4 py-2 border-b">{{ ucfirst($task->priority) }}</td>
                                 <td class="px-4 py-2 border-b">{{ ucfirst($task->status) }}</td>
-                                <td class="px-4 py-2 border-b">{{ $task->due_date }}</td>
+                                <td class="px-4 py-2 border-b">{{ $task->due_date->format('Y-m-d') }}</td>
                                 <td class="px-4 py-2 border-b text-center space-x-2">
                                     <a href="{{ route('tasks.show', $task) }}" class="text-blue-600">Podgląd</a>
                                     <a href="{{ route('tasks.edit', $task) }}" class="text-yellow-500">Edytuj</a>
@@ -55,16 +66,39 @@
                                         <button class="text-red-600" onclick="return confirm('Na pewno usunąć?')">Usuń</button>
                                     </form>
                                 </td>
+                                <td class="px-4 py-2 border-b text-center">
+                                    @if($task->isTokenValid())
+                                        <input type="text" readonly id="public-link-{{ $task->id }}" value="{{ url('/public/tasks/' . $task->public_token) }}" class="w-full px-2 py-1 text-sm border rounded" />
+                                        <button 
+                                            onclick="copyToClipboard('public-link-{{ $task->id }}')"
+                                            class="mt-1 bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600"
+                                        >Kopiuj link</button>
+                                    @else
+                                        <span class="text-gray-400 text-xs">Brak linku</span>
+                                    @endif
+                                </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="px-4 py-2 text-center">Brak zadań</td></tr>
+                            <tr><td colspan="6" class="px-4 py-2 text-center">Brak zadań</td></tr>
                         @endforelse
                     </tbody>
                 </table>
+
                 <div class="px-6 py-3">
                     {{ $tasks->withQueryString()->links() }}
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function copyToClipboard(elementId) {
+            const input = document.getElementById(elementId);
+            input.select();
+            input.setSelectionRange(0, 99999); // dla mobilnych urządzeń
+            navigator.clipboard.writeText(input.value).then(() => {
+                alert('Skopiowano do schowka!');
+            });
+        }
+    </script>
 </x-app-layout>

@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->enum('status', ['to-do', 'in progress', 'done']);
             $table->date('due_date');
             $table->string('public_token')->nullable()->unique();
-            $table->timestamp('token_expires_at')->nullable();
+            $table->dateTime('token_expires_at')->nullable();
             $table->timestamps();
         });
     }

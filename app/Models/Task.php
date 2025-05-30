@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -31,6 +32,7 @@ class Task extends Model
 
     public function isTokenValid(): bool
     {
-        return $this->public_token && $this->token_expires_at && $this->token_expires_at->isFuture();
+        // return $this->public_token && $this->token_expires_at && $this->token_expires_at->isFuture();
+        return !empty($this->public_token);
     }
 }

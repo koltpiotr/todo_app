@@ -34,7 +34,7 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'priority' => 'required|in:low,medium,high',
-            'status' => 'required|in:to-do,in progress,done',
+            'status' => 'required|in:to-do,"in progress",done', // cudzysłowy wokół in progress
             'due_date' => 'required|date|after_or_equal:today',
         ]);
 
@@ -65,7 +65,7 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'priority' => 'required|in:low,medium,high',
-            'status' => 'required|in:to-do,in progress,done',
+            'status' => 'required|in:to-do,"in progress",done',
             'due_date' => 'required|date|after_or_equal:today',
         ]);
 
@@ -73,7 +73,7 @@ class TaskController extends Controller
 
         return redirect()->route('tasks.index')->with('success', 'Zadanie zaktualizowane.');
     }
-
+    
     public function destroy(Task $task)
     {
         $this->authorize('delete', $task);
@@ -87,7 +87,7 @@ class TaskController extends Controller
         $this->authorize('update', $task);
 
         $task->public_token = Str::random(32);
-        $task->token_expires_at = now()->addDay(); // ustawia ważność na 1 dzień
+        $task->token_expires_at = now()->addDay();
         $task->save();
 
         return redirect()->route('tasks.index')->with('success', 'Wygenerowano link do zadania.');
@@ -95,9 +95,9 @@ class TaskController extends Controller
 
     public function showPublic(string $token)
     {
-        $task = Task::where('public_token', $token)->firstOrFail();
+        $task = Task::where('public_token', $token)->first();
 
-        if (!$task->token_expires_at || $task->token_expires_at->isPast()) {
+        if (!$task || !$task->token_expires_at || $task->token_expires_at->isPast()) {
             abort(403, 'Link wygasł lub jest nieprawidłowy.');
         }
 
